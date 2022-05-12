@@ -7,6 +7,10 @@
 
 // c 
 #include "stdio.h"
+#include "math.h"
+#include "time.h"
+#include "stdlib.h"
+#include "string.h"
 
 // raylib
 #include "raylib.h"
@@ -15,6 +19,29 @@
 
 // src
 
+
+// dice amount
+static int diceAmount = 1;
+static int roll;
+static int last;
+
+// button boxes
+#define boxSize 50
+#define buttonSizeWidth 100
+#define buttonSizeHeight 50
+
+Rectangle bIncrease = {220, 50, boxSize, boxSize};
+Rectangle bDecrease = {70, 50, boxSize, boxSize};
+
+Rectangle rollStats = {500, 150, buttonSizeWidth, buttonSizeHeight};
+
+Rectangle bDFour = {50, 200, buttonSizeWidth, buttonSizeHeight};
+Rectangle bDSix = {300, 200, buttonSizeWidth, buttonSizeHeight};
+Rectangle bDEight = {550, 200, buttonSizeWidth, buttonSizeHeight};
+
+Rectangle bDTen = {50, 400, buttonSizeWidth, buttonSizeHeight};
+Rectangle bDTwelve = {300, 400, buttonSizeWidth, buttonSizeHeight};
+Rectangle bdTwenty = {550, 400, buttonSizeWidth, buttonSizeHeight};
 
 // definitions
 #define screenWidth 800
@@ -61,6 +88,20 @@ Rectangle buttonPower = {20, 350, 120, 40};
 
 Rectangle buttonAuto = {150, 350, 120, 40};
 
+ int statsListing[5];
+
+bool RollDice(int amount, int type, int *statsListing)
+{
+    int i;
+    for ( i = 0; i < 5; i++ )
+    {
+    amount += (rand() % 6) + 1;
+    statsListing[i] = amount;
+    }
+    printf(" D6 is is %d \n", amount);
+    return false;
+}
+
 int main(void)
 {
     // initialization
@@ -69,12 +110,36 @@ int main(void)
     int letterCount = 0;
 
     //stats
-    char strengthSet[3] = "\0";
-    int letterCountStr = 0;
-    char dexteritySet[3] = "\0";
-    char constitutionSet[3] = "\0";
-    char intelligenceSet[3] = "\0";
-    char wisdomSet[3] = "\0";
+    //int strengthSet = 0;
+    int indexStat = 0;
+    // int dexteritySet = 0;
+    // int constitutionSet = 0;bool RollDice(int amount, int type, int *statsListing)
+{
+    int i;
+    for ( i = 0; i < 5; i++ )
+    {
+    amount += (rand() % 6) + 1;
+    statsListing[i] = amount;
+    }
+    printf(" D6 is is %d \n", amount);
+    return false;
+}
+    // int intelligenceSet = 0;
+    // int wisdomSet = 0;
+    srand(time(NULL));
+    int statsListing[] = {1,1,1,1,1};
+
+    char mystr[30];
+    char mystr2[30];
+    char mystr3[30];
+    char mystr4[30];
+    char mystr5[30];
+
+    sprintf ( mystr,"%i", statsListing[0]);
+    sprintf ( mystr2,"%i", statsListing[1]);
+    sprintf ( mystr3,"%i", statsListing[2]);
+    sprintf ( mystr4,"%i", statsListing[3]);
+    sprintf ( mystr5,"%i", statsListing[4]);
 
 
 
@@ -118,36 +183,6 @@ int main(void)
         //------------------------
         if (CheckCollisionPointRec(GetMousePosition(), textBox)) mouseOnText = true;
         else mouseOnText = false;
-        if (CheckCollisionPointRec(GetMousePosition(), strBox)) mouseOnStr = true;
-        else mouseOnStr = false;
-
-        if (mouseOnStr)
-        {
-            // Set the window's cursor to the I-Beam
-            SetMouseCursor(MOUSE_CURSOR_IBEAM);
-                        //Get char pressed (unicode character) on the queue
-            int keyStr = GetCharPressed();
-
-            //check if more characters have been pressed on the same frame
-            while (keyStr > 0)
-            {
-                    //NOTE: Only allow keys in range [32..125]
-                    if ((keyStr>= 32) && (keyStr <= 125) && (letterCountStr < MAX_INPUT_STATS))
-                    {
-                        strengthSet[letterCountStr] = (char)keyStr;
-                        strengthSet[letterCountStr+1] = '\0';
-                        letterCountStr++;
-                    }
-
-                    keyStr = GetCharPressed();
-                }
-                if (IsKeyPressed(KEY_BACKSPACE))
-                {
-                    letterCountStr--;
-                    if (letterCountStr < 0) letterCountStr = 0;
-                    strengthSet[letterCountStr] = '\0';
-                }
-        }
 
 
         if (mouseOnText)
@@ -184,7 +219,36 @@ int main(void)
         else framesCounter = 0;
         // get mouse position
         mousePos = GetMousePosition();
+        bool declareStatCounts = false;
 
+
+        // dice type
+            if (CheckCollisionPointRec(mousePos, rollStats) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                declareStatCounts = true;
+                printf(" Intersection is %d \n", declareStatCounts);
+            }
+            else declareStatCounts = false;
+
+
+            if (declareStatCounts == true)
+            {
+                while (indexStat < 5)
+                {
+                 RollDice(3, 2,statsListing);
+                printf("Indexed Stat is %d \n", statsListing[indexStat]);
+                indexStat ++;
+
+                }
+                indexStat = 0;
+                sprintf ( mystr,"%i", statsListing[0]);
+                sprintf ( mystr2,"%i", statsListing[1]);
+                sprintf ( mystr3,"%i", statsListing[2]);
+                sprintf ( mystr4,"%i", statsListing[3]);
+                sprintf ( mystr5,"%i", statsListing[4]);
+                printf("%s \n", mystr2);
+                                declareStatCounts = false;
+            }  
 
         // draw loop
         BeginDrawing();
@@ -211,17 +275,67 @@ int main(void)
                 else DrawText("Pres BACKSPACE to delete chars...", 230, 300, 20, GRAY);
             }
         
+            
+        // buttons
+        // // increase
+        // DrawRectangle(bDecrease.x, bDecrease.y, bDecrease.width, bDecrease.height, WHITE);
+        // DrawText("<", 85, 45, 70, BLACK);
+
+        // // decrease
+        // DrawRectangle(bIncrease.x, bIncrease.y, bIncrease.width, bIncrease.height, WHITE);
+        // DrawText(">", 240, 45, 70, BLACK);
+        // // d4
+        // DrawRectangle(bDFour.x, bDFour.y, bDFour.width, bDFour.height, WHITE);
+        // DrawText("D4", 100, 230, 80, BLACK);
+
+        // // d6
+        // DrawRectangle(bDSix.x, bDSix.y, bDSix.width, bDSix.height, WHITE);
+        // DrawText("D6", 350, 230, 80, BLACK);
+
+        // // d8
+        // DrawRectangle(bDEight.x, bDEight.y, bDEight.width, bDEight.height, WHITE);
+        // DrawText("D8", 600, 230, 80, BLACK);
+
+        // // d10
+        // DrawRectangle(bDTen.x, bDTen.y, bDTen.width, bDTen.height, WHITE);
+        // DrawText("D10", 80, 410, 80, BLACK);
+
+        // // d12
+        // DrawRectangle(bDTwelve.x, bDTwelve.y, bDTwelve.width, bDTwelve.height, WHITE);
+        // DrawText("D12", 340, 410, 80, BLACK);
+
+        // // d20
+        // DrawRectangle(bdTwenty.x, bdTwenty.y, bdTwenty.width, bdTwenty.height, WHITE);
+        // DrawText("D20", 580, 410, 80, BLACK);
+            
+            DrawRectangle(rollStats.x, rollStats.y, buttonSizeWidth, buttonSizeHeight, DARKGRAY);
 
             DrawRectangle(button.x, button.y, button.width, button.height, DARKGRAY);
             DrawText("MY NAME:", (button.x + 3), (button.y + 10), 20, LIGHTGRAY);
 
             //Draw the boxes for stats
             DrawRectangleRec(strBox, LIGHTGRAY);
-            DrawText(strengthSet, (int)strBox.x + 3, (int)strBox.y, 20, MAROON);
+            //sprintf(mystr, "%d", num); 
+            ///char *12  itoa ( int val, char * str, int base );
+
+
+
+                sprintf ( mystr,"%i", statsListing[0]);
+                sprintf ( mystr2,"%i", statsListing[1]);
+                sprintf ( mystr3,"%i", statsListing[2]);
+                sprintf ( mystr4,"%i", statsListing[3]);
+                sprintf ( mystr5,"%i", statsListing[4]);
+
+            DrawText(mystr, (int)strBox.x + 3, (int)strBox.y, 20, MAROON);
             DrawRectangleRec(dexBox, LIGHTGRAY);
+            DrawText(mystr2, (int)dexBox.x + 3, (int)dexBox.y, 20, MAROON);
             DrawRectangleRec(conBox, LIGHTGRAY);
+            DrawText(mystr3, (int)conBox.x + 3, (int)conBox.y, 20, MAROON);
             DrawRectangleRec(intBox, LIGHTGRAY);
+            DrawText(mystr4, (int)intBox.x + 3, (int)intBox.y, 20, MAROON);
             DrawRectangleRec(wisBox, LIGHTGRAY);
+            DrawText(mystr5, (int)wisBox.x + 3, (int)wisBox.y, 20, MAROON);
+
 
             //Draw the hit suff boxes
             DrawRectangleRec(hdBox, LIGHTGRAY);
