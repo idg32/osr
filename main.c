@@ -92,11 +92,15 @@ Rectangle buttonAuto = {150, 350, 120, 40};
 
 bool RollDice(int amount, int type, int *statsListing)
 {
-    int i;
+    int i, k;
     for ( i = 0; i < 5; i++ )
     {
-    amount += (rand() % 6) + 1;
-    statsListing[i] = amount;
+        for ( k = 0; k < 2; k++ )
+        {
+            amount += (rand() % 6) + 1;
+            statsListing[i] = amount;
+        }
+        amount = 0;
     }
     printf(" D6 is is %d \n", amount);
     return false;
@@ -114,16 +118,7 @@ int main(void)
     int indexStat = 0;
     // int dexteritySet = 0;
     // int constitutionSet = 0;bool RollDice(int amount, int type, int *statsListing)
-{
-    int i;
-    for ( i = 0; i < 5; i++ )
-    {
-    amount += (rand() % 6) + 1;
-    statsListing[i] = amount;
-    }
-    printf(" D6 is is %d \n", amount);
-    return false;
-}
+
     // int intelligenceSet = 0;
     // int wisdomSet = 0;
     srand(time(NULL));
@@ -160,7 +155,7 @@ int main(void)
     bool mouseOnText = false;
 
     int framesCounter = 0;
-    SetTargetFPS(10);
+
     // debug log
     SetTraceLogLevel(LOG_ERROR);
     // actual window creation, size and name
@@ -233,21 +228,14 @@ int main(void)
 
             if (declareStatCounts == true)
             {
-                while (indexStat < 5)
-                {
                  RollDice(3, 2,statsListing);
-                printf("Indexed Stat is %d \n", statsListing[indexStat]);
-                indexStat ++;
-
-                }
-                indexStat = 0;
                 sprintf ( mystr,"%i", statsListing[0]);
                 sprintf ( mystr2,"%i", statsListing[1]);
                 sprintf ( mystr3,"%i", statsListing[2]);
                 sprintf ( mystr4,"%i", statsListing[3]);
                 sprintf ( mystr5,"%i", statsListing[4]);
                 printf("%s \n", mystr2);
-                                declareStatCounts = false;
+                declareStatCounts = false;
             }  
 
         // draw loop
