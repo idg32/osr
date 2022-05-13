@@ -1,3 +1,4 @@
+
 /* 
     PROJECT DOCS
 */
@@ -60,7 +61,7 @@ Rectangle bdTwenty = {550, 400, buttonSizeWidth, buttonSizeHeight};
 #define _y_wis 320 + 80
 #define _y_cha 360 + 80
 #define _text_size 20
-#define _y_h_es 440
+#define _y_h_es 480
 #define _x_hd 100
 #define _x_hp 240
 // window size
@@ -88,23 +89,39 @@ Rectangle buttonPower = {20, 350, 120, 40};
 
 Rectangle buttonAuto = {150, 350, 120, 40};
 
- int statsListing[5];
+int statsListing[5];
 
-bool RollDice(int amount, int type, int *statsListing)
+bool RollDice(int amount, int type)
 {
-    int i, k;
-    for ( i = 0; i < 5; i++ )
+    static int rolled = 0;
+
+    // add all rolls
+    for (int i = 0; i < amount; i++)
     {
-        for ( k = 0; k < 2; k++ )
-        {
-            amount += (rand() % 6) + 1;
-            statsListing[i] = amount;
-        }
-        amount = 0;
+        rolled += rand() % type + 1;
     }
-    printf(" D6 is is %d \n", amount);
+
+   // store dice
+    last = roll;
+    roll = rolled;
+    rolled = 0;
+
     return false;
 }
+
+bool RollStats(void)
+{
+    int amount;
+    for ( int i = 0; i < 6; i++ )
+    {
+        RollDice(3, 6);
+        amount = roll;
+        statsListing[i] = amount;
+        printf("stats: %d = %d\n", i, statsListing[i]);
+    }
+    return false;
+}
+
 
 int main(void)
 {
@@ -115,28 +132,16 @@ int main(void)
 
     //stats
     //int strengthSet = 0;
-    int indexStat = 0;
     // int dexteritySet = 0;
     // int constitutionSet = 0;bool RollDice(int amount, int type, int *statsListing)
-
+            bool declareStatCounts = false;
+            bool exchangeStats = false;
+            bool midStatsEx = false;
+            int tempStatSet1, tempStatSet2;
+            int tempSwapStat1, tempSwapStat2;
     // int intelligenceSet = 0;
     // int wisdomSet = 0;
     srand(time(NULL));
-    int statsListing[] = {1,1,1,1,1};
-
-    char mystr[30];
-    char mystr2[30];
-    char mystr3[30];
-    char mystr4[30];
-    char mystr5[30];
-
-    sprintf ( mystr,"%i", statsListing[0]);
-    sprintf ( mystr2,"%i", statsListing[1]);
-    sprintf ( mystr3,"%i", statsListing[2]);
-    sprintf ( mystr4,"%i", statsListing[3]);
-    sprintf ( mystr5,"%i", statsListing[4]);
-
-
 
     //naming
     Rectangle textBox = { screenWidth/2.0f - 250, 180, 270, 20};
@@ -146,6 +151,7 @@ int main(void)
     Rectangle conBox = { _x_stat + 50, _y_con, 30, 20};
     Rectangle intBox = { _x_stat + 50, _y_int, 30, 20};
     Rectangle wisBox = { _x_stat + 50, _y_wis, 30, 20};
+    Rectangle chaBox = { _x_stat + 50, _y_cha, 30, 20};
     //dice wierd thing
     Rectangle hdBox = { _x_stat + 50, _y_h_es, 30, 20};
     Rectangle hpBox = { _x_stat + 140 + 50, _y_h_es, 30, 20};
@@ -155,7 +161,7 @@ int main(void)
     bool mouseOnText = false;
 
     int framesCounter = 0;
-
+    SetTargetFPS(10);
     // debug log
     SetTraceLogLevel(LOG_ERROR);
     // actual window creation, size and name
@@ -214,29 +220,117 @@ int main(void)
         else framesCounter = 0;
         // get mouse position
         mousePos = GetMousePosition();
-        bool declareStatCounts = false;
 
 
-        // dice type
+        // dice type rolling thingy for stuff
             if (CheckCollisionPointRec(mousePos, rollStats) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             {
-                declareStatCounts = true;
-                printf(" Intersection is %d \n", declareStatCounts);
+                if (declareStatCounts == false)
+                {
+                    RollStats();
+                    declareStatCounts = true;
+                } 
             }
-            else declareStatCounts = false;
-
-
-            if (declareStatCounts == true)
+        if (exchangeStats == false && declareStatCounts)
+        {
+            if (CheckCollisionPointRec(mousePos, strBox) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             {
-                 RollDice(3, 2,statsListing);
-                sprintf ( mystr,"%i", statsListing[0]);
-                sprintf ( mystr2,"%i", statsListing[1]);
-                sprintf ( mystr3,"%i", statsListing[2]);
-                sprintf ( mystr4,"%i", statsListing[3]);
-                sprintf ( mystr5,"%i", statsListing[4]);
-                printf("%s \n", mystr2);
-                declareStatCounts = false;
-            }  
+                if (!midStatsEx)
+                {
+                    tempStatSet1 = statsListing[0];
+                    tempSwapStat1 = 0;
+                    midStatsEx = true;
+                }
+                else 
+                {
+                    tempStatSet2 = statsListing[0];
+                    statsListing[0] = tempStatSet1;
+                    statsListing[tempSwapStat1] = tempStatSet2;
+                    exchangeStats = true;
+                }
+            }
+            if (CheckCollisionPointRec(mousePos, dexBox) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                if (!midStatsEx)
+                {
+                    tempStatSet1 = statsListing[1];
+                    tempSwapStat1 = 1;
+                    midStatsEx = true;
+                }
+                else 
+                {
+                    tempStatSet2 = statsListing[1];
+                    statsListing[1] = tempStatSet1;
+                    statsListing[tempSwapStat1] = tempStatSet2;
+                    exchangeStats = true;
+                }
+            }
+            if (CheckCollisionPointRec(mousePos, conBox) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                if (!midStatsEx)
+                {
+                    tempStatSet1 = statsListing[2];
+                    tempSwapStat1 = 2;
+                    midStatsEx = true;
+                }
+                else 
+                {
+                    tempStatSet2 = statsListing[2];
+                    statsListing[2] = tempStatSet1;
+                    statsListing[tempSwapStat1] = tempStatSet2;
+                    exchangeStats = true;
+                }
+            }
+            if (CheckCollisionPointRec(mousePos, intBox) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                if (!midStatsEx)
+                {
+                    tempStatSet1 = statsListing[3];
+                    tempSwapStat1 = 3;
+                    midStatsEx = true;
+                }
+                else 
+                {
+                    tempStatSet2 = statsListing[3];
+                    statsListing[3] = tempStatSet1;
+                    statsListing[tempSwapStat1] = tempStatSet2;
+                    exchangeStats = true;
+                }
+            }
+            if (CheckCollisionPointRec(mousePos, wisBox) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                if (!midStatsEx)
+                {
+                    tempStatSet1 = statsListing[4];
+                    tempSwapStat1 = 4;
+                    midStatsEx = true;
+                }
+                else 
+                {
+                    tempStatSet2 = statsListing[4];
+                    statsListing[4] = tempStatSet1;
+                    statsListing[tempSwapStat1] = tempStatSet2;
+                    exchangeStats = true;
+                }
+            }
+            if (CheckCollisionPointRec(mousePos, chaBox) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                if (!midStatsEx)
+                {
+                    tempStatSet1 = statsListing[5];
+                    tempSwapStat1 = 5;
+                    midStatsEx = true;
+                }
+                else 
+                {
+                    tempStatSet2 = statsListing[5];
+                    statsListing[5] = tempStatSet1;
+                    statsListing[tempSwapStat1] = tempStatSet2;
+                    exchangeStats = true;
+                }
+            }
+        }
+
 
         // draw loop
         BeginDrawing();
@@ -262,41 +356,10 @@ int main(void)
                 }
                 else DrawText("Pres BACKSPACE to delete chars...", 230, 300, 20, GRAY);
             }
-        
             
-        // buttons
-        // // increase
-        // DrawRectangle(bDecrease.x, bDecrease.y, bDecrease.width, bDecrease.height, WHITE);
-        // DrawText("<", 85, 45, 70, BLACK);
-
-        // // decrease
-        // DrawRectangle(bIncrease.x, bIncrease.y, bIncrease.width, bIncrease.height, WHITE);
-        // DrawText(">", 240, 45, 70, BLACK);
-        // // d4
-        // DrawRectangle(bDFour.x, bDFour.y, bDFour.width, bDFour.height, WHITE);
-        // DrawText("D4", 100, 230, 80, BLACK);
-
-        // // d6
-        // DrawRectangle(bDSix.x, bDSix.y, bDSix.width, bDSix.height, WHITE);
-        // DrawText("D6", 350, 230, 80, BLACK);
-
-        // // d8
-        // DrawRectangle(bDEight.x, bDEight.y, bDEight.width, bDEight.height, WHITE);
-        // DrawText("D8", 600, 230, 80, BLACK);
-
-        // // d10
-        // DrawRectangle(bDTen.x, bDTen.y, bDTen.width, bDTen.height, WHITE);
-        // DrawText("D10", 80, 410, 80, BLACK);
-
-        // // d12
-        // DrawRectangle(bDTwelve.x, bDTwelve.y, bDTwelve.width, bDTwelve.height, WHITE);
-        // DrawText("D12", 340, 410, 80, BLACK);
-
-        // // d20
-        // DrawRectangle(bdTwenty.x, bdTwenty.y, bdTwenty.width, bdTwenty.height, WHITE);
-        // DrawText("D20", 580, 410, 80, BLACK);
-            
+            //rolling thingy
             DrawRectangle(rollStats.x, rollStats.y, buttonSizeWidth, buttonSizeHeight, DARKGRAY);
+            DrawText("ROLL", rollStats.x + 23, rollStats.y + 15, 20, LIGHTGRAY);
 
             DrawRectangle(button.x, button.y, button.width, button.height, DARKGRAY);
             DrawText("MY NAME:", (button.x + 3), (button.y + 10), 20, LIGHTGRAY);
@@ -306,23 +369,27 @@ int main(void)
             //sprintf(mystr, "%d", num); 
             ///char *12  itoa ( int val, char * str, int base );
 
-
-
-                sprintf ( mystr,"%i", statsListing[0]);
-                sprintf ( mystr2,"%i", statsListing[1]);
-                sprintf ( mystr3,"%i", statsListing[2]);
-                sprintf ( mystr4,"%i", statsListing[3]);
-                sprintf ( mystr5,"%i", statsListing[4]);
-
-            DrawText(mystr, (int)strBox.x + 3, (int)strBox.y, 20, MAROON);
+            DrawText(TextFormat("%i", statsListing[0]), (int)strBox.x + 3, (int)strBox.y, 20, MAROON);
             DrawRectangleRec(dexBox, LIGHTGRAY);
-            DrawText(mystr2, (int)dexBox.x + 3, (int)dexBox.y, 20, MAROON);
+            DrawText(TextFormat("%i", statsListing[1]), (int)dexBox.x + 3, (int)dexBox.y, 20, MAROON);
             DrawRectangleRec(conBox, LIGHTGRAY);
-            DrawText(mystr3, (int)conBox.x + 3, (int)conBox.y, 20, MAROON);
+            DrawText(TextFormat("%i", statsListing[2]), (int)conBox.x + 3, (int)conBox.y, 20, MAROON);
             DrawRectangleRec(intBox, LIGHTGRAY);
-            DrawText(mystr4, (int)intBox.x + 3, (int)intBox.y, 20, MAROON);
+            DrawText(TextFormat("%i", statsListing[3]), (int)intBox.x + 3, (int)intBox.y, 20, MAROON);
             DrawRectangleRec(wisBox, LIGHTGRAY);
-            DrawText(mystr5, (int)wisBox.x + 3, (int)wisBox.y, 20, MAROON);
+            DrawText(TextFormat("%i", statsListing[4]), (int)wisBox.x + 3, (int)wisBox.y, 20, MAROON);
+            DrawRectangleRec(chaBox, LIGHTGRAY);
+            DrawText(TextFormat("%i", statsListing[5]), (int)chaBox.x + 3, (int)chaBox.y, 20, MAROON);
+
+            //exchange draw stuff
+            if (exchangeStats == false && declareStatCounts == true)
+            {
+                DrawText("CLICK A STAT TO EXCHANGE WITH ANOTHER...", 300,300,20,LIGHTGRAY);
+                if (midStatsEx)
+                {
+                    DrawText("NOW CHOOSE ANOTHER...", 300,350,20,LIGHTGRAY);
+                }
+            }
 
 
             //Draw the hit suff boxes
@@ -337,6 +404,7 @@ int main(void)
             DrawText(consView, _x_stat, _y_con, _text_size, WHITE);
             DrawText(inteView, _x_stat, _y_int, _text_size, WHITE);
             DrawText(wiseView, _x_stat, _y_wis, _text_size, WHITE);
+            DrawText(chamView, _x_stat, _y_cha, _text_size, WHITE);
 
             //Draw the hit stuff
             DrawText("HD", _x_hd, _y_h_es, _text_size, WHITE);
