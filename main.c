@@ -89,6 +89,11 @@ Rectangle buttonPower = {20, 350, 120, 40};
 
 Rectangle buttonAuto = {150, 350, 120, 40};
 
+// icons for classes
+Rectangle fighter = {200, 200, 32, 32};
+Rectangle thief = {250, 200, 32, 32};
+Rectangle mage = {300, 200, 32, 32};
+
 int statsListing[6];
 int hitD;
 int results[101];
@@ -118,7 +123,7 @@ bool RollStats(void)
     int amount;
     for ( int i = 0; i < 6; i++ )
     {
-        RollDice(3, 6);
+        RollDice(3, 4);
         amount = roll;
         statsListing[i] = amount;
         printf("stats: %d = %d\n", i, statsListing[i]);
@@ -138,7 +143,7 @@ bool RollHitDice(void)
     return false;
 }
 
-typedef enum State { LOGO = 0, TITLE, GAMEPLAY, ENDING, TESTING } State;
+typedef enum State { LOGO = 0, TITLE, CHOOSECLASS, NEWGAME, ENDING, TESTING } State;
 State currentState = TITLE;
 
 int main(void)
@@ -205,10 +210,15 @@ int main(void)
         {
             case TITLE:
             {
-                if (IsKeyPressed(KEY_SPACE)) currentState = GAMEPLAY;
+                if (IsKeyPressed(KEY_SPACE)) currentState = CHOOSECLASS;
                 if (IsKeyPressed(KEY_HOME)) currentState = TESTING;
             }break;
-            case GAMEPLAY:
+            case CHOOSECLASS:
+            {
+                mousePos = GetMousePosition();
+
+            }break;
+            case NEWGAME:
             {
                 // update loop
                 //------------------------
@@ -415,7 +425,15 @@ int main(void)
                 DrawText("BLACK HACK", screenWidth / 3.5, screenHeight / 15, 50, WHITE);
                 DrawText("PRESS SPACE TO CONTINUE", screenWidth / 5, screenHeight / 2, 30, WHITE);
             }break;
-            case GAMEPLAY:
+            case CHOOSECLASS:
+            {
+                DrawTexture(splashImg, 0,0,WHITE);
+                DrawRectangleRec(fighter, RED);
+                DrawRectangleRec(thief, DARKGRAY);
+                //DrawRectangleRec(cleric, BLUE);
+                DrawRectangleRec(mage, GRAY);
+            }break;
+            case NEWGAME:
             {
                     // test text
                     DrawText("BLACK HACK", screenWidth / 3.5, screenHeight / 15, 50, WHITE);
@@ -498,12 +516,13 @@ int main(void)
             case TESTING:
             {
                 DrawTexture(splashImg, 0,0,WHITE);
-                DrawTexture(dice, screenWidth / 2, screenHeight / 7,WHITE);
+                //DrawTexture(dice, screenWidth / 2, screenHeight / 7,WHITE);
                 DrawText(TextFormat("RESULTS[20x]:%d", avrge), 20, 40, 20, WHITE);
                 for(int k=0; k<20; k++) {
                     DrawText(TextFormat("%d ", results[k]),100 + (k * 20),100,20,WHITE);
                 }
             }break;
+            
         }
         ShowCursor();
 
