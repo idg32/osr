@@ -89,8 +89,11 @@ Rectangle buttonPower = {20, 350, 120, 40};
 
 Rectangle buttonAuto = {150, 350, 120, 40};
 
-int statsListing[5];
+int statsListing[6];
 int hitD;
+int results[101];
+int total_dice;
+int avrge;
 
 bool RollDice(int amount, int type)
 {
@@ -127,19 +130,20 @@ bool RollHitDice(void)
 {
     int amountHD;
     printf("%i \n", roll);
-    RollDice(1,6);
+    RollDice(1, 6);
     printf("%i \n", roll);
 
     amountHD = roll;
-    hitD = amountHD + 2;
+    hitD = roll + 2;
     return false;
 }
 
-typedef enum State { LOGO = 0, TITLE, GAMEPLAY, ENDING } State;
-State currentState = GAMEPLAY;
+typedef enum State { LOGO = 0, TITLE, GAMEPLAY, ENDING, TESTING } State;
+State currentState = TITLE;
 
 int main(void)
 {
+        SetTargetFPS(10);
     // initialization
     //---------------------------------------------------
     char namePlayer[MAX_INPUT_CHARS + 1] = "\0";
@@ -171,17 +175,19 @@ int main(void)
     //dice wierd thing
     Rectangle hdBox = { _x_stat + 50, _y_h_es, 30, 20};
     Rectangle hpBox = { _x_stat + 140 + 50, _y_h_es, 30, 20};
-
+                    bool run_result = false;
+                bool print_result = false;
 
     bool mouseOnStr = false;
     bool mouseOnText = false;
 
     int framesCounter = 0;
-    SetTargetFPS(10);
     // debug log
     SetTraceLogLevel(LOG_ERROR);
     // actual window creation, size and name
     InitWindow(screenWidth, screenHeight, screenName);
+    Texture2D dice = LoadTexture("OIP.png");
+    Texture2D splashImg = LoadTexture("parchment.png");
 
     SetTargetFPS(60); // target fps
 
@@ -197,6 +203,11 @@ int main(void)
                 }
         switch(currentState)
         {
+            case TITLE:
+            {
+                if (IsKeyPressed(KEY_SPACE)) currentState = GAMEPLAY;
+                if (IsKeyPressed(KEY_HOME)) currentState = TESTING;
+            }break;
             case GAMEPLAY:
             {
                 // update loop
@@ -243,18 +254,19 @@ int main(void)
                 // dice type rolling thingy for stuff
                     if (CheckCollisionPointRec(mousePos, rollStats) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
                     {
-                        printf("\nHIT D%i \n", rollHD);
-                        if (rollHD == 1)
+                        printf("\nHIT D = %i \n", rollHD);
+                        if (rollHD == 1 && exchangeStats == true)
                         {
-                            RollHitDice();
                             rollHD = 2;
-                            printf("HITD");
+                            printf("HITD \n");
+                            RollHitDice();
                         }
-                        if (declareStatCounts == false && rollHD == 0)
+                        if (declareStatCounts == false)
                         {
-                            RollStats();
-                            printf("REDO!");
+                                                       
                             declareStatCounts = true;
+                            printf("REDO! \n");
+                            RollStats();
                         } 
                     }
                 if (exchangeStats == false && declareStatCounts && rollHD == 0)
@@ -356,12 +368,55 @@ int main(void)
                         }
                     }
                 }
-                if (exchangeStats && rollHD == 0) rollHD = 1;
-
-                // draw loop
-                BeginDrawing();
-                    // background colour
-                    ClearBackground(BLACK);
+                if (exchangeStats == true && rollHD == 0) rollHD = 1;
+            }break;
+            case TESTING:
+            {
+                if (IsKeyPressed(KEY_SPACE))
+                {
+                    total_dice = 0;
+                    printf("RUNNNING");
+                    run_result = true;
+                }
+                if (IsKeyPressed(KEY_ENTER))
+                {
+                    print_result = true;
+                }
+                                if (run_result)
+                {
+                for (int i = 0; i < 20; i ++)
+                    {
+                        RollDice(3,4);
+                        results[i] = roll;
+                        total_dice += roll;
+                    }
+                    avrge = total_dice / 20;
+                    run_result = false;
+                }
+                if (print_result)
+                {
+                    for(int k=0; k<20; k++) {
+                        printf("%d ", results[k]);
+                    }
+                    print_result = false;
+                }
+            }break;
+        }
+    // draw loop
+    BeginDrawing();
+        // background colour
+        ClearBackground(BLACK);
+        switch (currentState)
+        {
+            case TITLE:
+            {
+                DrawTexture(splashImg, 0,0,WHITE);
+                DrawTexture(dice, screenWidth / 2, screenHeight / 7,WHITE);
+                DrawText("BLACK HACK", screenWidth / 3.5, screenHeight / 15, 50, WHITE);
+                DrawText("PRESS SPACE TO CONTINUE", screenWidth / 5, screenHeight / 2, 30, WHITE);
+            }break;
+            case GAMEPLAY:
+            {
                     // test text
                     DrawText("BLACK HACK", screenWidth / 3.5, screenHeight / 15, 50, WHITE);
                     //DrawText("NAME YOUR CHARACTER!",_x_text,_y_text,_sz_text,GRAY);
@@ -416,7 +471,10 @@ int main(void)
                             DrawText("NOW CHOOSE ANOTHER...", 300,350,20,LIGHTGRAY);
                         }
                     }
-
+                    if (exchangeStats == true && rollHD == 1)
+                    {
+                        DrawText("HIT ROLL FOR HIT POINTS..", 300,300,20,LIGHTGRAY);
+                    }
 
                     //Draw the hit suff boxes
                     DrawRectangleRec(hdBox, LIGHTGRAY);
@@ -437,9 +495,17 @@ int main(void)
                     DrawText("HD", _x_hd, _y_h_es, _text_size, WHITE);
                     DrawText("HP", _x_hp, _y_h_es, _text_size, WHITE);
             }break;
+            case TESTING:
+            {
+                DrawTexture(splashImg, 0,0,WHITE);
+                DrawTexture(dice, screenWidth / 2, screenHeight / 7,WHITE);
+                DrawText(TextFormat("RESULTS[20x]:%d", avrge), 20, 40, 20, WHITE);
+                for(int k=0; k<20; k++) {
+                    DrawText(TextFormat("%d ", results[k]),100 + (k * 20),100,20,WHITE);
+                }
+            }break;
         }
-
-            ShowCursor();
+        ShowCursor();
 
 
 
